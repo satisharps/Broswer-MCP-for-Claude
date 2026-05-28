@@ -32,9 +32,57 @@
       flex-shrink: 0;
     }
 
+    .header-text { flex: 1; }
     .header-text h1 { font-size: 13px; font-weight: 600; color: #fff; }
     .header-text p  { font-size: 11px; color: #777; margin-top: 1px; }
 
+    /* ── Toggle switch ── */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid #1e1e20;
+    }
+
+    .toggle-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .toggle-label span { font-size: 13px; font-weight: 500; color: #e8e8e8; }
+    .toggle-label small { font-size: 11px; color: #555; }
+
+    .switch {
+      position: relative;
+      width: 44px; height: 24px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: #888;
+      border-radius: 50%;
+      transition: transform 0.25s, background 0.25s;
+    }
+    input:checked + .slider { background: #1a3a1f; }
+    input:checked + .slider::before {
+      transform: translateX(20px);
+      background: #3fb950;
+    }
+
+    /* ── Status card ── */
     .status-card {
       margin: 12px;
       background: #1a1a1c;
@@ -58,6 +106,7 @@
     .dot.connected    { background: #3fb950; box-shadow: 0 0 6px #3fb95066; }
     .dot.disconnected { background: #f85149; }
     .dot.connecting   { background: #d29922; animation: pulse 1s ease-in-out infinite; }
+    .dot.off          { background: #444; }
 
     @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
 
@@ -65,50 +114,31 @@
     .status-label.connected    { color: #3fb950; }
     .status-label.disconnected { color: #f85149; }
     .status-label.connecting   { color: #d29922; }
+    .status-label.off          { color: #555; }
 
-    .status-sub { font-size: 11px; color: #666; margin-top: 6px; line-height: 1.4; }
+    .status-sub { font-size: 11px; color: #555; margin-top: 6px; line-height: 1.4; }
 
-    .tools-section {
-      margin: 0 12px 12px;
-    }
-
+    /* ── Tools grid ── */
+    .tools-section { margin: 0 12px 12px; }
     .tools-title {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #555;
-      margin-bottom: 6px;
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #444; margin-bottom: 6px;
     }
-
-    .tools-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px;
-    }
-
+    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     .tool-chip {
-      background: #1a1a1c;
-      border: 1px solid #2a2a2c;
-      border-radius: 5px;
-      padding: 5px 8px;
-      font-size: 11px;
-      color: #aaa;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      background: #1a1a1c; border: 1px solid #2a2a2c;
+      border-radius: 5px; padding: 5px 8px;
+      font-size: 11px; color: #666;
+      display: flex; align-items: center; gap: 5px;
     }
-
     .tool-chip span { font-size: 12px; }
 
     .footer {
       padding: 8px 12px 10px;
       border-top: 1px solid #1e1e20;
-      font-size: 10px;
-      color: #444;
-      text-align: center;
+      font-size: 10px; color: #444; text-align: center;
     }
-
     .footer a { color: #cc785c; text-decoration: none; }
   </style>
 </head>
@@ -121,12 +151,25 @@
     </div>
   </div>
 
+  <!-- Toggle -->
+  <div class="toggle-wrap">
+    <div class="toggle-label">
+      <span>Enable MCP</span>
+      <small id="toggleHint">Off — Claude cannot see browser</small>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="toggle" />
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <!-- Status -->
   <div class="status-card">
     <div class="status-row">
-      <div class="dot connecting" id="dot"></div>
-      <span class="status-label connecting" id="statusLabel">Connecting…</span>
+      <div class="dot off" id="dot"></div>
+      <span class="status-label off" id="statusLabel">Disabled</span>
     </div>
-    <div class="status-sub" id="statusSub">Waiting for Python MCP server to start.</div>
+    <div class="status-sub" id="statusSub">Toggle on to let Claude control this browser.</div>
   </div>
 
   <div class="tools-section">
@@ -147,7 +190,7 @@
 
   <div class="footer">
     Run <code>python server.py</code> to start &nbsp;•&nbsp;
-    <a href="https://docs.claude.com" target="_blank">Docs</a>
+    <a href="https://github.com/satisharps/Broswer-MCP-for-Claude" target="_blank">GitHub</a>
   </div>
 
   <script src="popup.js"></script>

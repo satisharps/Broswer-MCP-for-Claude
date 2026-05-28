@@ -1,37 +1,53 @@
-// popup.js — reads connection status from chrome.storage and updates UI
+// popup.js — toggle switch + live status display
 
-const dot = document.getElementById('dot');
-const label = document.getElementById('statusLabel');
-const sub = document.getElementById('statusSub');
+const toggle      = document.getElementById('toggle');
+const toggleHint  = document.getElementById('toggleHint');
+const dot         = document.getElementById('dot');
+const label       = document.getElementById('statusLabel');
+const sub         = document.getElementById('statusSub');
 
-function render(status) {
-  const state = status === 'connected' ? 'connected'
+function renderStatus(status, enabled) {
+  // Determine display state
+  const state = !enabled ? 'off'
+    : status === 'connected'    ? 'connected'
     : status === 'disconnected' ? 'disconnected'
     : 'connecting';
 
-  dot.className = `dot ${state}`;
+  dot.className   = `dot ${state}`;
   label.className = `status-label ${state}`;
 
-  if (state === 'connected') {
-    label.textContent = 'Connected';
-    sub.textContent = 'Claude can control this browser via MCP tools.';
-  } else if (state === 'disconnected') {
-    label.textContent = 'Disconnected';
-    sub.textContent = 'Python MCP server is not running. Start it with: python server.py';
-  } else {
-    label.textContent = 'Connecting…';
-    sub.textContent = 'Waiting for Python MCP server on localhost:9009.';
-  }
+  const messages = {
+    off:          ['Disabled',      'Toggle on to let Claude control this browser.'],
+    connected:    ['Connected',     'Claude can control this browser via MCP tools.'],
+    disconnected: ['Disconnected',  'Python MCP server not running. Start it with: python server.py'],
+    connecting:   ['Connecting…',   'Waiting for Python MCP server on localhost:9009.'],
+  };
+
+  const [labelText, subText] = messages[state];
+  label.textContent = labelText;
+  sub.textContent   = subText;
+  toggleHint.textContent = enabled ? 'On — Claude can see browser' : 'Off — Claude cannot see browser';
 }
 
-// Read current status
-chrome.storage.local.get(['mcpStatus'], (res) => {
-  render(res.mcpStatus || 'connecting');
+// Load saved state and render
+chrome.storage.local.get(['mcpEnabled', 'mcpStatus'], (res) => {
+  const enabled = res.mcpEnabled ?? false;
+  toggle.checked = enabled;
+  renderStatus(res.mcpStatus, enabled);
 });
 
-// Listen for changes while popup is open
+// User flips the toggle
+toggle.addEventListener('change', () => {
+  const enabled = toggle.checked;
+  chrome.runtime.sendMessage({ type: 'SET_ENABLED', enabled });
+  // Optimistic UI update
+  renderStatus(enabled ? 'connecting' : 'off', enabled);
+});
+
+// Live status updates while popup is open
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes.mcpStatus) {
-    render(changes.mcpStatus.newValue);
-  }
+  const enabled = changes.mcpEnabled ? changes.mcpEnabled.newValue : toggle.checked;
+  const status  = changes.mcpStatus  ? changes.mcpStatus.newValue  : null;
+  if (changes.mcpEnabled) toggle.checked = enabled;
+  if (status) renderStatus(status, enabled);
 });
