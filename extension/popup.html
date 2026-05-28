@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Browser MCP</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 280px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      background: #0f0f10;
+      color: #e8e8e8;
+    }
+
+    .header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #cc785c, #c96442);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .header-text h1 { font-size: 13px; font-weight: 600; color: #fff; }
+    .header-text p  { font-size: 11px; color: #777; margin-top: 1px; }
+
+    .status-card {
+      margin: 12px;
+      background: #1a1a1c;
+      border: 1px solid #2a2a2c;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .dot.connected    { background: #3fb950; box-shadow: 0 0 6px #3fb95066; }
+    .dot.disconnected { background: #f85149; }
+    .dot.connecting   { background: #d29922; animation: pulse 1s ease-in-out infinite; }
+
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+
+    .status-label { font-size: 12px; font-weight: 500; }
+    .status-label.connected    { color: #3fb950; }
+    .status-label.disconnected { color: #f85149; }
+    .status-label.connecting   { color: #d29922; }
+
+    .status-sub { font-size: 11px; color: #666; margin-top: 6px; line-height: 1.4; }
+
+    .tools-section {
+      margin: 0 12px 12px;
+    }
+
+    .tools-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .tool-chip {
+      background: #1a1a1c;
+      border: 1px solid #2a2a2c;
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-size: 11px;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tool-chip span { font-size: 12px; }
+
+    .footer {
+      padding: 8px 12px 10px;
+      border-top: 1px solid #1e1e20;
+      font-size: 10px;
+      color: #444;
+      text-align: center;
+    }
+
+    .footer a { color: #cc785c; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">⚡</div>
+    <div class="header-text">
+      <h1>Claude Browser MCP</h1>
+      <p>Bridge: localhost:9009</p>
+    </div>
+  </div>
+
+  <div class="status-card">
+    <div class="status-row">
+      <div class="dot connecting" id="dot"></div>
+      <span class="status-label connecting" id="statusLabel">Connecting…</span>
+    </div>
+    <div class="status-sub" id="statusSub">Waiting for Python MCP server to start.</div>
+  </div>
+
+  <div class="tools-section">
+    <div class="tools-title">Available Tools</div>
+    <div class="tools-grid">
+      <div class="tool-chip"><span>🌐</span> Navigate</div>
+      <div class="tool-chip"><span>📄</span> Read page</div>
+      <div class="tool-chip"><span>🖱️</span> Click</div>
+      <div class="tool-chip"><span>⌨️</span> Type text</div>
+      <div class="tool-chip"><span>📸</span> Screenshot</div>
+      <div class="tool-chip"><span>🗂️</span> Tabs</div>
+      <div class="tool-chip"><span>🔌</span> Network</div>
+      <div class="tool-chip"><span>🖥️</span> Console</div>
+      <div class="tool-chip"><span>⚙️</span> Execute JS</div>
+      <div class="tool-chip"><span>🔍</span> Find elements</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Run <code>python server.py</code> to start &nbsp;•&nbsp;
+    <a href="https://docs.claude.com" target="_blank">Docs</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Claude Browser MCP",
+  "version": "1.0.0",
+  "description": "Connects Chrome to Claude (Cowork / Claude Code) via MCP — enables navigate, click, type, screenshot, network monitoring, and more.",
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "scripting",
+    "webNavigation",
+    "debugger",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Claude Browser MCP"
+  }
+}
