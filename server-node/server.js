@@ -59,7 +59,8 @@ class BrowserBridge {
       }
 
       const id = this.nextId();
-      const message = { id, action, params: params || {} };
+      // The Chrome extension's dispatcher reads the `command` field.
+      const message = { id, command: action, params: params || {} };
 
       const timer = setTimeout(() => {
         this.pending.delete(id);
@@ -85,7 +86,9 @@ class BrowserBridge {
     if (!entry) return;
     clearTimeout(entry.timer);
     this.pending.delete(id);
-    if (data.error !== undefined) {
+    // The extension always includes `error` (null on success), so check for a
+    // non-null value rather than presence.
+    if (data.error != null) {
       entry.reject(new Error(String(data.error)));
     } else {
       entry.resolve(data);
@@ -167,17 +170,24 @@ tool(
 
 tool("go_back", "Navigate back in browser history.", {}, "go_back");
 tool("go_forward", "Navigate forward in browser history.", {}, "go_forward");
-tool("reload_page", "Reload the current page.", {}, "reload_page");
+tool("reload_page", "Reload the current page.", {}, "reload");
 
 // --- Page inspection ---
 tool("get_page_info", "Get information about the current page (URL, title).", {}, "get_page_info");
 tool("get_page_text", "Get the visible text content of the current page.", {}, "get_page_text");
 tool("get_page_html", "Get the full HTML of the current page.", {}, "get_page_html");
-tool(
+mcp.tool(
   "take_screenshot",
-  "Take a screenshot of the current visible tab. Returns base64 PNG data.",
+  "Take a screenshot of the current visible tab.",
   {},
-  "take_screenshot"
+  async () => {
+    const response = await bridge.sendCommand("take_screenshot");
+    const result = response.result !== undefined ? response.result : response;
+    const dataUrl = result.screenshot || "";
+    if (!dataUrl) throw new Error("Screenshot failed — no data returned");
+    const b64 = dataUrl.includes(",") ? dataUrl.split(",", 2)[1] : dataUrl;
+    return { content: [{ type: "image", data: b64, mimeType: "image/png" }] };
+  }
 );
 
 // --- Element interaction ---
@@ -227,7 +237,7 @@ tool(
   "Wait for an element to appear on the page.",
   {
     selector: z.string().describe("CSS selector for the element"),
-    timeout: z.number().int().default(5000).describe("Maximum time to wait in milliseconds (default 5000)"),
+    timeout: z.number().int().default(10).describe("Maximum time to wait in seconds (default 10)"),
   },
   "wait_for_element"
 );
@@ -237,12 +247,12 @@ tool(
   "Scroll the page.",
   {
     direction: z
-      .enum(["up", "down", "top", "bottom"])
+      .enum(["up", "down", "left", "right", "top", "bottom"])
       .default("down")
-      .describe("Direction to scroll ('up', 'down', 'top', 'bottom')"),
-    amount: z.number().int().default(500).describe("Pixels to scroll (default 500)"),
+      .describe("Direction to scroll ('up', 'down', 'left', 'right', 'top', 'bottom')"),
+    amount: z.number().int().default(1).describe("Scroll multiplier; each unit = 300px (default 1)"),
   },
-  "scroll_page"
+  "scroll"
 );
 
 tool(
@@ -260,7 +270,7 @@ tool(
   "Switch to a specific tab.",
   { tab_id: z.number().int().describe("The ID of the tab to switch to") },
   "switch_tab",
-  ({ tab_id }) => ({ tabId: tab_id })
+  ({ tab_id }) => ({ tab_id })
 );
 
 tool(
@@ -275,7 +285,7 @@ tool(
   "Close a specific tab.",
   { tab_id: z.number().int().describe("The ID of the tab to close") },
   "close_tab",
-  ({ tab_id }) => ({ tabId: tab_id })
+  ({ tab_id }) => ({ tab_id })
 );
 
 tool(
@@ -283,7 +293,7 @@ tool(
   "Duplicate a specific tab.",
   { tab_id: z.number().int().describe("The ID of the tab to duplicate") },
   "duplicate_tab",
-  ({ tab_id }) => ({ tabId: tab_id })
+  ({ tab_id }) => ({ tab_id })
 );
 
 // --- Network & console ---
