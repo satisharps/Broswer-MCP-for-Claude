@@ -77,8 +77,7 @@ npm version patch        # or: minor / major
 # 3. Preview exactly what will ship — should be 3 files
 npm publish --dry-run
 
-# 4. Log in once, then publish publicly
-npm login
+# 4. Publish publicly
 npm publish
 ```
 
