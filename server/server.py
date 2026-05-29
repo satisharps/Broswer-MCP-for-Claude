@@ -440,4 +440,48 @@ async def clear_console_logs() -> str:
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":
-    mcp.run()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Claude Browser MCP Server")
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "sse", "streamable-http"],
+        default="stdio",
+        help=(
+            "Transport mode:\n"
+            "  stdio            — Claude Code CLI and Cowork desktop (default, auto-started by Claude)\n"
+            "  sse              — Claude.ai chat via public URL (needs ngrok)\n"
+            "  streamable-http  — same as sse, newer MCP spec name\n"
+        ),
+    )
+    parser.add_argument(
+        "--host",
+        default="localhost",
+        help="Host to bind HTTP/SSE server (default: localhost). Use 0.0.0.0 for remote/ngrok access.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="Port for HTTP/SSE server (default: 8765)",
+    )
+    args = parser.parse_args()
+
+    if args.transport in ("sse", "streamable-http"):
+        _log(f"🌐  Starting {args.transport} server on http://{args.host}:{args.port}")
+        _log(f"    SSE endpoint : http://{args.host}:{args.port}/sse")
+        _log(f"    For Claude.ai: expose via ngrok then register the /sse URL")
+        # FastMCP 1.x: host/port are set via mcp.settings, NOT as run() kwargs
+        try:
+            mcp.settings.host = args.host
+            mcp.settings.port = args.port
+        except AttributeError:
+            # Fallback: env vars are read by FastMCP if settings not available
+            import os
+            os.environ["FASTMCP_HOST"] = args.host
+            os.environ["FASTMCP_PORT"] = str(args.port)
+        mcp.run(transport=args.transport)
+    else:
+        _log("📡  Starting stdio transport (Claude Code CLI / Cowork mode)")
+        _log("    Claude starts this server automatically — no manual startup needed.")
+        mcp.run(transport="stdio")
