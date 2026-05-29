@@ -1,7 +1,7 @@
 {
   "name": "browser-mcp-satisharps",
   "version": "1.1.1",
-  "description": "MCP server that connects Claude Code to Chrome via a WebSocket bridge to the Browser MCP extension.",
+  "description": "MCP server that lets Claude (Code, Cowork, claude.ai chat) drive Chrome via a WebSocket bridge to the Browser MCP extension. stdio or always-on HTTP daemon.",
   "license": "MIT",
   "author": "satisharps",
   "type": "module",
