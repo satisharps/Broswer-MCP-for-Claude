@@ -61,6 +61,33 @@ npm install
 node server.js
 ```
 
+## Publishing
+
+This package is published to the npm registry so it can be run with `npx`.
+
+```bash
+cd server-node
+
+# 1. Check the name is still available (a 404 means it's free)
+npm view browser-mcp-satisharps
+
+# 2. Bump the version (npm refuses to republish the same version)
+npm version patch        # or: minor / major
+
+# 3. Preview exactly what will ship — should be 3 files
+npm publish --dry-run
+
+# 4. Log in once, then publish publicly
+npm login
+npm publish
+```
+
+After publishing, anyone can add it to Claude Code with:
+
+```bash
+claude mcp add browser npx browser-mcp-satisharps
+```
+
 ## License
 
 MIT
