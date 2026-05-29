@@ -1,0 +1,40 @@
+{
+  "name": "browser-mcp-satisharps",
+  "version": "1.0.0",
+  "description": "MCP server that connects Claude Code to Chrome via a WebSocket bridge to the Browser MCP extension.",
+  "license": "MIT",
+  "author": "satisharps",
+  "type": "module",
+  "bin": {
+    "browser-mcp-satisharps": "server.js"
+  },
+  "main": "server.js",
+  "files": [
+    "server.js",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "browser",
+    "chrome",
+    "automation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/satisharps/Broswer-MCP-for-Claude.git",
+    "directory": "server-node"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  }
+}
