@@ -213,7 +213,10 @@ function buildMcpServer() {
   tool(
     "find_elements",
     "Find elements on the page matching a CSS selector.",
-    { selector: z.string().describe("CSS selector (e.g., 'button', '.class', '#id')") },
+    {
+      selector: z.string().describe("CSS selector (e.g., 'button', '.class', '#id')"),
+      limit: z.number().int().default(20).describe("Maximum number of elements to return (default 20)"),
+    },
     "find_elements"
   );
   tool(
