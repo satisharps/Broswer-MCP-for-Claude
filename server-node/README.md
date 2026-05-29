@@ -23,22 +23,76 @@ npx browser-mcp-satisharps
 
 ## How it works
 
+The server always owns the WebSocket bridge on `ws://localhost:9009` that the
+Chrome extension connects to. It can expose MCP to clients in two ways:
+
+**stdio mode (default)** — `node server.js`
+
 ```
 Claude Code  <--stdio (MCP)-->  server.js  <--WebSocket :9009-->  Chrome extension
 ```
 
-1. The server starts a WebSocket server on `ws://localhost:9009`.
-2. The Browser MCP Chrome extension connects to it automatically.
-3. Claude Code talks to the server over stdio and calls tools, which are forwarded
-   to the extension and executed against the active tab.
+The client spawns one server per session. Simplest, but only one client at a
+time (each would otherwise fight over port 9009). Good for the `npx` quick start.
 
-You need the companion Chrome extension installed and active for the tools to work.
+**HTTP mode (always-on daemon)** — `node server.js --http --port 8765`
+
+```
+Claude Code  ─┐
+Cowork        ├─ HTTP /mcp :8765 ─► server.js ─ WebSocket :9009 ─► Chrome extension
+claude.ai     ─┘
+```
+
+One long-running server owns `:9009` and serves MCP over Streamable HTTP on
+`:8765`, so **Code, Cowork, and claude.ai chat can all share one browser bridge
+at the same time**. This is the mode you want if you use more than one client.
+
+Either way you need the companion Chrome extension installed and toggled **ON**.
 The extension lives in the [`extension/`](../extension) folder of this repo.
 
 ## Requirements
 
 - Node.js >= 18
 - The Browser MCP Chrome extension installed and enabled
+
+## Use with Code, Cowork, and claude.ai chat (always-on)
+
+1. **Install the always-on service** (macOS launchd):
+
+   ```bash
+   cd server-node
+   ./install-service.sh        # runs `server.js --http --port 8765` at login
+   ```
+
+   It owns `:9009` (extension) and `:8765` (MCP HTTP). Remove with
+   `./install-service.sh remove`.
+
+2. **Claude Code** — register the HTTP endpoint:
+
+   ```bash
+   claude mcp add --transport http browser http://localhost:8765/mcp
+   ```
+
+3. **Cowork** — add a remote/custom MCP server pointing at
+   `http://localhost:8765/mcp` (Streamable HTTP).
+
+4. **claude.ai chat** — chat needs a *public* URL. Tunnel `:8765` and add the
+   public `/mcp` URL as a custom connector:
+
+   ```bash
+   ngrok http 8765
+   # then use https://<id>.ngrok.app/mcp as the connector URL
+   ```
+
+5. **Toggle the Chrome extension ON.** Confirm everything is wired up:
+
+   ```bash
+   curl -s http://localhost:8765/health
+   # {"status":"ok","extensionConnected":true,"mcpEndpoint":"/mcp"}
+   ```
+
+> Only one Browser MCP server can own port 9009. If you run the always-on
+> service, do **not** also register the stdio command — they'll collide.
 
 ## Tools
 
